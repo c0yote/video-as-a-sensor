@@ -1,8 +1,7 @@
 import os, time, cv2, numpy as np
 
 name = os.getenv("INSTANCE_NAME", "proc")
-#url  = os.getenv("STREAM_URL", "rtmp://relay:1935/live/mystream")
-url  = "rtsp://localhost:8554/fakestream"
+url  = os.getenv("STREAM_URL", "rtsp://localhost:8554/fakestream")
 
 # Create output directory for difference frames
 output_dir = f"/tmp/{name}_frames"
@@ -69,7 +68,7 @@ while True:
         # Also save the thresholded binary mask showing detected changes
         binary_mask = (diff > change_threshold).astype(np.uint8) * 255
         mask_filename = f"{output_dir}/mask_frame_{frames}_{timestamp}.jpg"
-        cv2.imwrite(mask_filename, binary_mask)
+        #cv2.imwrite(mask_filename, binary_mask)
         
         print(f"[{name}] Saved difference frame: {diff_filename}")
         print(f"[{name}] Saved binary mask: {mask_filename}")

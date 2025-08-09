@@ -114,7 +114,7 @@ while True:
         cv2.rectangle(full_mask_colored, (x1, y1), (x2, y2), (0, 255, 255), 2)  # Yellow box
         
         mask_filename = f"{output_dir}/roi_mask_frame_{frames}_{timestamp}.jpg"
-        cv2.imwrite(mask_filename, full_mask_colored)
+        #cv2.imwrite(mask_filename, full_mask_colored)
         
         print(f"[{name}] Saved ROI difference frame: {diff_filename}")
         print(f"[{name}] Saved ROI binary mask: {mask_filename}")
