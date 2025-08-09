@@ -1,0 +1,11 @@
+services:
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    ports: ["8554:8554","1935:1935","8888:8888"]
+  fake:
+    image: lscr.io/linuxserver/ffmpeg:latest
+    depends_on: [mediamtx]
+    command: >-
+      -re -f lavfi -i testsrc=size=640x360:rate=30
+      -pix_fmt yuv420p -c:v libx264 -preset veryfast -tune zerolatency
+      -f rtsp rtsp://mediamtx:8554/fakestream

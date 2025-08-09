@@ -1,0 +1,63 @@
+services:
+  # RTSP source (MediaMTX) just to host the fake stream
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    ports:
+      - "8554:8554"   # RTSP (optional to expose)
+    restart: unless-stopped
+
+  # Generate a fake RTSP feed
+  fake:
+    image: lscr.io/linuxserver/ffmpeg:latest
+    depends_on: [mediamtx]
+    command:
+      - -re
+      - -f
+      - lavfi
+      - -i
+      - testsrc=size=640x360:rate=30
+      - -pix_fmt
+      - yuv420p
+      - -c:v
+      - libx264
+      - -preset
+      - veryfast
+      - -tune
+      - zerolatency
+      - -f
+      - rtsp
+      - rtsp://mediamtx:8554/fakestream
+    restart: unless-stopped
+
+  # Nginx RTMP relay (with HLS)
+  relay:
+    image: alfg/nginx-rtmp:latest
+    ports:
+      - "1935:1935"
+      - "8080:80"
+    volumes:
+      - ./relay/nginx.conf:/etc/nginx/nginx.conf:ro
+    command: ["/bin/sh","-lc","nginx -T && nginx -g 'daemon off;'"]
+    restart: unless-stopped
+
+  # Pull RTSP and push to nginx-rtmp
+  rtmp_pusher:
+    image: lscr.io/linuxserver/ffmpeg:latest
+    depends_on: [mediamtx, relay]
+    command:
+      - -rtsp_transport
+      - tcp
+      - -i
+      - rtsp://mediamtx:8554/fakestream
+      - -c:v
+      - libx264
+      - -preset
+      - veryfast
+      - -tune
+      - zerolatency
+      - -g
+      - "60"
+      - -f
+      - flv
+      - rtmp://relay:1935/live/mystream
+    restart: unless-stopped
